@@ -43,6 +43,13 @@
     return self;
 }
 
+- (id) initWithFrame:(CGRect)frame placeholderImg:(UIImage *) placeholderImg
+{
+    NJBannerView *bannerV = [self initWithFrame:frame];
+    bannerV.placeholderImg = placeholderImg;
+    return bannerV;
+}
+
 - (NSMutableArray *) arrBannerImageViews
 {
     if (_arrBannerImageViews == nil) {
@@ -72,6 +79,7 @@
         };
         imageV.dicProperty = datas[0];
         [self addSubview:imageV];
+        
         return;
     }
     
@@ -91,6 +99,13 @@
 {
     _currentPageIndicatorTintColor = currentPageIndicatorTintColor;
     self.pageControl.currentPageIndicatorTintColor = currentPageIndicatorTintColor;
+}
+
+- (void) setPlaceholderImg:(UIImage *)placeholderImg
+{
+    for (NJBannerImageView *imgV in self.arrBannerImageViews) {
+        imgV.placeholderImg = placeholderImg;
+    }
 }
 
 - (void) bannerAction:(NSString *)link
@@ -225,7 +240,6 @@
     for (int i = 0; i < self.arrBannerImageViews.count; i++) {
         NJBannerImageView *imageV = self.arrBannerImageViews[i];
         imageV.dicProperty = self.datas[i%_datas.count];
-        [self.scrollerView addSubview:imageV];
     }
 }
 

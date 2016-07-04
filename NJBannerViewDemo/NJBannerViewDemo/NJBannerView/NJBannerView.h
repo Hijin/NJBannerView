@@ -10,6 +10,8 @@
 
 @interface NJBannerView : UIView
 
+- (id) initWithFrame:(CGRect)frame placeholderImg:(UIImage *) placeholderImg;
+
 /**
  *  datas:字典数组，key:img,value:本地图片名或网络图片地址
  */
@@ -21,6 +23,7 @@
 
 @property (copy , nonatomic) UIColor *pageIndicatorTintColor;
 @property (copy , nonatomic) UIColor *currentPageIndicatorTintColor;
+@property (copy , nonatomic) UIImage *placeholderImg;
 //图片滚动间隔
 @property (assign , nonatomic) CGFloat intervalTime;
 @end

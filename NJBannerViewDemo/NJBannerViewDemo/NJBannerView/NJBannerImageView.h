@@ -13,4 +13,5 @@
 @property (copy , nonatomic) NSDictionary *dicProperty;
 @property (copy , nonatomic) void(^linkAction)(NSString *link);
 
+@property (copy , nonatomic) UIImage *placeholderImg;
 @end

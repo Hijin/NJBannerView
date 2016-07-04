@@ -37,7 +37,7 @@
     
     NSString *imgURL = _dicProperty[@"img"];
     if ([imgURL hasPrefix:@"http"]) {  //网络图片
-        [_imgV sd_setImageWithURL:[NSURL URLWithString:imgURL] placeholderImage:[UIImage imageNamed:@"loading"] options:SDWebImageRetryFailed];
+        [_imgV sd_setImageWithURL:[NSURL URLWithString:imgURL] placeholderImage:self.placeholderImg options:SDWebImageRetryFailed];
     }
     else
     {

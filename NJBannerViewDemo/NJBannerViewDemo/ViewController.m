@@ -10,7 +10,7 @@
 #import "NJBannerView.h"
 #import "BannerDetailVC.h"
 
-@interface ViewController ()
+@interface ViewController ()<NJBannerViewDataSource>
 
 @property (weak , nonatomic) NJBannerView *bannerV;
 

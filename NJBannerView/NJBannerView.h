@@ -8,9 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-@interface NJBannerView : UIView
+@protocol NJBannerViewDataSource <NSObject>
 
-- (id) initWithFrame:(CGRect)frame placeholderImg:(UIImage *) placeholderImg;
+@optional
+- (UIPageControl *)pageControlOfNJBannerView;
+@end
+
+@interface NJBannerView : UIView
 
 /**
  *  datas:字典数组，key:img,value:本地图片名或网络图片地址
@@ -24,6 +28,10 @@
 @property (copy , nonatomic) UIColor *pageIndicatorTintColor;
 @property (copy , nonatomic) UIColor *currentPageIndicatorTintColor;
 @property (copy , nonatomic) UIImage *placeholderImg;
+@property (weak , nonatomic) id<NJBannerViewDataSource> dataSouce;
 //图片滚动间隔
 @property (assign , nonatomic) CGFloat intervalTime;
+
+
+- (id) initWithFrame:(CGRect)frame placeholderImg:(UIImage *) placeholderImg;
 @end

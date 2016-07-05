@@ -144,12 +144,20 @@
     if (_datas.count <= 0)
         return;
     
-    CGRect frame = CGRectMake(0, HEIGHT * 0.95, WIDTH, HEIGHT * 0.05);
-    UIPageControl *pageControl = [[UIPageControl alloc] initWithFrame:frame];
+    UIPageControl *pageControl = nil;
+    if (self.dataSouce && [self.dataSouce respondsToSelector:@selector(pageControlOfNJBannerView)]) {
+        pageControl = [self.dataSouce pageControlOfNJBannerView];
+    }
+    else
+    {
+        CGRect frame = CGRectMake(0, HEIGHT * 0.95, WIDTH, HEIGHT * 0.05);
+        pageControl = [[UIPageControl alloc] initWithFrame:frame];
+        pageControl.pageIndicatorTintColor = self.pageIndicatorTintColor;
+        pageControl.currentPageIndicatorTintColor = self.currentPageIndicatorTintColor;
+    }
+    
     pageControl.numberOfPages = self.datas.count;
     pageControl.currentPage = 1;
-    pageControl.pageIndicatorTintColor = self.pageIndicatorTintColor;
-    pageControl.currentPageIndicatorTintColor = self.currentPageIndicatorTintColor;
     
     [self addSubview:pageControl];
     self.pageControl = pageControl;
@@ -272,6 +280,5 @@
         self.timer = nil;
     }
 }
-
 
 @end

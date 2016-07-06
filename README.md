@@ -10,6 +10,13 @@
 ####三张以上图片效果
 ![three pictures](http://recordit.co/wXeKQse901.gif)
 
+###CocoaPods引入安装
+在Podfile中加入
+```
+platform :ios, '7.0'
+pod 'NJBannerView', '~> 1.0.4'
+```
+
 ###使用
 ####datas
 datas:字典数组，key:img,value:本地图片名或网络图片地址

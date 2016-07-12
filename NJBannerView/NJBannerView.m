@@ -26,6 +26,11 @@
  */
 @property (copy , nonatomic) NSMutableArray *arrBannerImageViews;
 
+//banner数量
+@property (assign , nonatomic) NSInteger datasCount;
+//当前显示的页码
+@property (assign , nonatomic) NSInteger currentPage;
+
 - (void) startAnimation;
 - (void) stopAnimation;
 
@@ -39,6 +44,7 @@
         _currentPageIndicatorTintColor = [UIColor whiteColor];
         _pageIndicatorTintColor = [UIColor grayColor];
         _intervalTime = 2.0f;
+        _isNeedAutoScroll = YES;
     }
     return self;
 }
@@ -67,9 +73,16 @@
     return _arrBannerImageViews;
 }
 
+- (NSInteger) currentPage
+{
+    return self.pageControl.currentPage;
+}
+
 - (void) setDatas:(NSMutableArray *)datas
 {
     _datas = datas;
+    self.datasCount = datas.count;
+    
     if (datas.count <= 0) return;
     if (datas.count == 1) {
         NJBannerImageView *imageV = [[NJBannerImageView alloc] initWithFrame:self.bounds];
@@ -86,7 +99,6 @@
     [self setScrollerView];
     [self setPageControl];
     [self startAnimation];
-    
 }
 
 - (void) setPageIndicatorTintColor:(UIColor *)pageIndicatorTintColor
@@ -108,6 +120,21 @@
     }
 }
 
+- (void) setIsNeedAutoScroll:(BOOL)isNeedAutoScroll
+{
+    _isNeedAutoScroll = isNeedAutoScroll;
+    if (self.datasCount < 2) {
+        return;
+    }
+    if (isNeedAutoScroll) {
+        [self startAnimation];
+        return;
+    }
+    if (!isNeedAutoScroll) {
+        [self stopAnimation];
+    }
+}
+
 - (void) bannerAction:(NSString *)link
 {
     if (self.linkAction) {
@@ -122,7 +149,7 @@
     UIScrollView *scroller = [[UIScrollView alloc] initWithFrame:self.bounds];
     scroller.delegate = self;
     scroller.pagingEnabled = YES;
-    scroller.bounces = NO;
+    scroller.bounces = YES;
     scroller.showsHorizontalScrollIndicator = NO;
     CGSize size = CGSizeMake(WIDTH * 3, HEIGHT);
     scroller.contentSize = size;
@@ -141,9 +168,6 @@
 
 - (void) setPageControl
 {
-    if (_datas.count <= 0)
-        return;
-    
     UIPageControl *pageControl = nil;
     if (self.dataSouce && [self.dataSouce respondsToSelector:@selector(pageControlOfNJBannerView)]) {
         pageControl = [self.dataSouce pageControlOfNJBannerView];
@@ -156,7 +180,7 @@
         pageControl.currentPageIndicatorTintColor = self.currentPageIndicatorTintColor;
     }
     
-    pageControl.numberOfPages = self.datas.count;
+    pageControl.numberOfPages = self.datasCount;
     pageControl.currentPage = 1;
     
     [self addSubview:pageControl];
@@ -174,44 +198,46 @@
 }
 
 /**
- *  自动滚动停止
- *
- */
-- (void) scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
-{
-    [self scrollViewEndScroll:scrollView];
-}
-
-/**
  *  拖动滚动停止
  *
  */
 - (void) scrollViewDidEndDecelerating:(UIScrollView *)scrollView
 {
-    [self scrollViewEndScroll:scrollView];
     [self performSelector:@selector(startAnimation) withObject:nil afterDelay:0];
 }
 
-/**
- *  滚动停止
- *
- */
-- (void)scrollViewEndScroll:(UIScrollView *)scrollView
+- (void) scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    CGFloat contentX = scrollView.contentOffset.x;
-
-    BOOL isRight = (contentX - self.lastContentX > 0);
+    CGFloat x = scrollView.contentOffset.x - self.lastContentX;
+    NSUInteger index = fabs(x) / WIDTH;
     
-    [self adjustPage:isRight];
-    
-    [self adjustBannerImage:isRight];
-    [self adjustBanner];
+    if (index == 1) {
+        BOOL isRight = (x > 0);
+        
+        if (self.isNeedAutoScroll  || (!(self.currentPage == self.datasCount - 1 && isRight)  && !(self.currentPage == 0 && !isRight))) {
+            [self adjustPage:isRight];
+        }
+        
+        BOOL isNeedAdjust = !((self.currentPage == self.datasCount -1) ||
+                              (self.currentPage == self.datasCount -2 && !isRight) ||
+                              (self.currentPage == 0) ||
+                              (self.currentPage == 1 && isRight));
+        
+        if (self.isNeedAutoScroll || isNeedAdjust) {
+            [self adjustBannerImage:isRight];
+            [self adjustBanner];
+        }
+        
+        if (!self.isNeedAutoScroll) {
+            [self adjustLastContentX];
+        }
+    }
 }
 
 - (void) adjustPage:(BOOL) isRight
 {
     if (isRight) {
-        if (self.pageControl.currentPage == self.datas.count - 1) {
+        if (self.currentPage == self.datasCount - 1) {
             self.pageControl.currentPage = 0;
             return;
         }
@@ -220,8 +246,8 @@
         return;
     }
     
-    if (self.pageControl.currentPage == 0) {
-        self.pageControl.currentPage = self.datas.count - 1;
+    if (self.currentPage == 0) {
+        self.pageControl.currentPage = self.datasCount - 1;
         return;
     }
     self.pageControl.currentPage -= 1;
@@ -229,7 +255,7 @@
 
 - (void) adjustBannerImage:(BOOL) isRight
 {
-    int lastIndex =(int) self.datas.count -1;
+    int lastIndex =(int) self.datasCount -1;
     if (isRight) {
         NSDictionary *firstDatas = self.datas[0];
         for (int i = 0; i< lastIndex + 1 ; i++) {
@@ -247,13 +273,28 @@
     }
     for (int i = 0; i < self.arrBannerImageViews.count; i++) {
         NJBannerImageView *imageV = self.arrBannerImageViews[i];
-        imageV.dicProperty = self.datas[i%_datas.count];
+        imageV.dicProperty = self.datas[i%self.datasCount];
     }
 }
 
 - (void) adjustBanner
 {
     [self.scrollerView setContentOffset:CGPointMake(WIDTH, 0)];
+}
+
+- (void) adjustLastContentX
+{
+    if (self.currentPage == self.datasCount - 1) {
+        self.lastContentX = WIDTH *2;
+    }
+    else if (self.currentPage == 0)
+    {
+        self.lastContentX = 0;
+    }
+    else
+    {
+        self.lastContentX = WIDTH;
+    }
 }
 
 - (void) autoAnimation
@@ -267,7 +308,9 @@
 
 - (void) startAnimation
 {
-    _timer = [NSTimer scheduledTimerWithTimeInterval:self.intervalTime target:self selector:@selector(autoAnimation) userInfo:nil repeats:YES];
+    if (_isNeedAutoScroll && !_timer) {
+       _timer = [NSTimer scheduledTimerWithTimeInterval:self.intervalTime target:self selector:@selector(autoAnimation) userInfo:nil repeats:YES];
+    }
 }
 
 /**

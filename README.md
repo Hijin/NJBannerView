@@ -14,7 +14,7 @@
 在Podfile中加入
 ```
 platform :ios, '7.0'
-pod 'NJBannerView', '~> 1.0.4'
+pod 'NJBannerView', '~> 1.0.5'
 ```
 
 ###使用
